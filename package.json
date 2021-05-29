@@ -9,17 +9,7 @@
 	"categories": [
 		"Other"
 	],
-	"activationEvents": [
-        "onCommand:railsgotoviewcomponent.helloWorld"
-	],
 	"main": "./extension.js",
-	"contributes": {
-		"commands": [{
-            "command": "railsgotoviewcomponent.helloWorld",
-            "title": "Hello World"
-
-		}]
-	},
 	"scripts": {
 		"lint": "eslint .",
 		"pretest": "yarn run lint",
