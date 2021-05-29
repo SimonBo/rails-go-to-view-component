@@ -3,6 +3,7 @@
 	"displayName": "RailsGoToViewComponent",
 	"description": "Go to view component from the view file!",
 	"version": "0.0.1",
+	"publisher": "SzymonBorucki",
 	"engines": {
 		"vscode": "^1.56.0"
 	},
