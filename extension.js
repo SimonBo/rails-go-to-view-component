@@ -1,36 +1,55 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-const vscode = require('vscode');
+const vscode = require('vscode')
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
-
-/**
- * @param {vscode.ExtensionContext} context
- */
-function activate(context) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "railsgotoviewcomponent" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('railsgotoviewcomponent.helloWorld', function () {
-		// The code you place here will be executed every time your command is executed
-
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from RailsGoToViewComponent!');
-	});
-
-	context.subscriptions.push(disposable);
+function openFile (fileName) {
+  return vscode.workspace.openTextDocument(fileName)
+    .then(textDocument => vscode.window.showTextDocument(textDocument))
 }
 
-// this method is called when your extension is deactivated
-function deactivate() {}
+class ViewComponentDefinitionProvider {
+  async provideDefinition (document, position, token) {
+    const componentName = this.getComponentName(document, position)
+    console.log(componentName)
+    await openFile(`${vscode.workspace.rootPath}/app/components/${componentName}`)
+    return undefined
+  }
 
+  getComponentName (document, position) {
+    return this.getComponentNameFromLine(
+      document.lineAt(position.line).text
+    )
+  }
+
+  getComponentNameFromLine (text) {
+    if (!(/Component/.test(text))) { return '' }
+    const componentName = text.split(' ').filter(function (el) { return el.indexOf('Component') !== -1 })[0].split('.new')[0]
+
+    return this.filePath(componentName)
+  }
+
+  filePath (componentName) {
+    const toSnakeCase = str =>
+      str &&
+      str
+        .match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
+        .map(x => x.toLowerCase())
+        .join('_')
+
+    return componentName.split('::').map(el => toSnakeCase(el)).join('/') + '.rb'
+  }
+}
+
+const SELECTOR = ['erb', 'haml', 'slim']
+
+function activate (context) {
+  context.subscriptions.push(
+    vscode.languages.registerDefinitionProvider(
+      SELECTOR, new (ViewComponentDefinitionProvider)()
+    )
+  )
+}
+
+function deactivate () {}
 module.exports = {
-	activate,
-	deactivate
+  activate,
+  deactivate
 }
